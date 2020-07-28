@@ -111,10 +111,10 @@ export default {
   &-title {
     position: absolute;
     left: 0;
-    bottom: 0.2rem;
+    bottom: 0.1rem;
     width: 100%;
     text-align: center;
-    font-size: 0.16rem;
+    font-size: 0.14rem;
     color: #8e99a6;
   }
 }

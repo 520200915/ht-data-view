@@ -8,7 +8,6 @@
 
 <script type='text/ecmascript-6'>
 import china from '@p/map/china.json'
-import mapId from '@p/map/mapId.js'
 const nanhai = {
   name: "南海诸岛",
   itemStyle: {
@@ -48,32 +47,16 @@ export default {
             align: 'center',
             color: '#333',
             verticalAlign: 'top',
+            fontSize: 8
           },
           map: mapName,
           regions: [
             nanhai
           ],
-          roam: 'move'
+          roam: 'move',
+          zoom: 1.2
         },
-        series: [
-          {
-            type: 'map',
-            data: [
-              {
-                name: '四川省',
-                value: 100
-              },
-              {
-                name: '上海市',
-                value: 10
-              },
-              {
-                name: '北京市',
-                value: 30
-              }
-            ]
-          }
-        ]
+        series: []
       }
       map.setOption(options)
       map.on('click', val => {
@@ -100,9 +83,7 @@ export default {
         }
         this.$emit('click', this.cityName ? adcode : null)
       })
-
     },
-
   }
 }
 </script>

@@ -1,8 +1,10 @@
 <template>
-  <div
-    class='ht-line'
-    ref='canvas'
-  >
+  <div class='ht-line'>
+    <div
+      class="canvas-line"
+      ref='canvas'
+    ></div>
+    <div class="title">{{title}}</div>
   </div>
 </template>
 
@@ -11,11 +13,12 @@ export default {
   name: 'ht-line',
   data () {
     return {
-
+      canvas: null
     }
   },
   props: {
-    data: null,
+    list: null,
+    title: String,
     days: {
       type: Array,
       default: []
@@ -29,19 +32,24 @@ export default {
     }
   },
   mounted () {
-    this.createdCanvas()
+    // this.createdCanvas()
   },
   methods: {
     createdCanvas () {
-      if (this.canvas) {
-        this.labels = []
-        this.values = []
-        this.canvas.clear()
-      }
+      if (this.canvas) this.canvas.clear()
+      let { list, days } = this
       this.canvas = echarts.init(this.$refs.canvas)
       let options = {
         tooltip: {
-          trigger: 'axis'
+          trigger: 'axis',
+          formatter: (params) => {
+            let str = ''
+            params.map((e, index) => {
+              str += `${e.marker}\t${e.seriesName}:\t${e.value}${index === 0 ? '' : '%'}`
+              if (index === 0) str += '<br/>'
+            })
+            return str
+          }
         },
         xAxis: [
           {
@@ -65,14 +73,12 @@ export default {
                 color: 'rgba(153, 153, 153,0.5)'
               }
             },
-            data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+            data: days
           }
         ],
         yAxis: [
           {
             type: 'value',
-            min: 0,
-            max: 1000,
             axisLabel: {
               formatter: '{value}',
               textStyle: {
@@ -92,14 +98,14 @@ export default {
               lineStyle: {
                 color: 'rgba(153, 153, 153,0.5)'
               }
-            }
+            },
           },
           {
             type: 'value',
             min: 0,
-            max: 1000,
+            max: 100,
             axisLabel: {
-              formatter: '{value}',
+              formatter: '{value}%',
               textStyle: {
                 color: 'rgba(153, 153, 153,0.5)'
               }
@@ -122,7 +128,7 @@ export default {
         ],
         series: [
           {
-            name: '已采纳',
+            name: list[0].name,
             type: 'line',
             symbol: 'none',
             smooth: true,
@@ -135,27 +141,14 @@ export default {
                 },
                 areaStyle: {
                   color: 'rgb(255,176,0)'
-                  // color: new echarts.graphic.LinearGradient(0, 1, 0, 0, [{
-                  //   offset: 0,
-                  //   color: 'rgba(7,44,90,0.3)'
-                  // }, {
-                  //   offset: 1,
-                  //   color: 'rgba(0,146,246,0.9)'
-                  // }]),
                 }
               }
             },
-            markPoint: {
-              itemStyle: {
-                normal: {
-                  color: 'red'
-                }
-              }
-            },
-            data: [120, 132, 101, 134, 90, 230, 210, 182, 191, 234, 290, 330]
+            data: list[0].data,
+            yAxisIndex: 0
           },
           {
-            name: '浏览量',
+            name: list[1].name,
             type: 'line',
             symbol: 'none',
             smooth: true,
@@ -168,23 +161,15 @@ export default {
                 },
                 areaStyle: {
                   color: 'rgb(255,136,0)'
-                  // color: new echarts.graphic.LinearGradient(0, 1, 0, 0, [{
-                  //   offset: 0,
-                  //   color: 'rgba(7,44,90,0.3)'
-                  // }, {
-                  //   offset: 1,
-                  //   color: 'rgba(114,144,89,0.9)'
-                  // }]),
                 }
               }
             },
-            data: [150, 232, 201, 154, 190, 330, 410, 150, 232, 201, 154, 190]
+            data: list[1].data,
+            yAxisIndex: 1
           }
         ]
       }
-
       this.canvas.setOption(options)
-
     }
   },
 }
@@ -195,5 +180,18 @@ export default {
   width: 100%;
   height: 100%;
   position: relative;
+  .canvas-line {
+    width: 100%;
+    height: 100%;
+  }
+  .title {
+    position: absolute;
+    left: 0;
+    bottom: 0.1rem;
+    width: 100%;
+    text-align: center;
+    font-size: 0.14rem;
+    color: #8e99a6;
+  }
 }
 </style>

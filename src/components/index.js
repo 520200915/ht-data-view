@@ -2,12 +2,14 @@ import Box from './Box.vue'
 import HtMap from './HtMap.vue'
 import HtLine from './HtLine.vue'
 import Radar from './Radar.vue'
+import ScrollView from './ScrollView.vue'
 
 const components = [
   Box,
   HtMap,
   HtLine,
-  Radar
+  Radar,
+  ScrollView
 ]
 const GlsxVueComponents = {}
 GlsxVueComponents.install = Vue => {

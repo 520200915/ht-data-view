@@ -81,8 +81,9 @@
             <div class="bottom">
               <Box
                 title='在线率'
-                :val='vehicleInfo.onlineRatio * 100'
+                :val='vehicleInfo.onlineRatio'
                 separator=','
+                decimals='2'
                 unit='%'
                 :class='"small"'
               ></Box>
@@ -103,6 +104,7 @@
                   title='日均行驶里程'
                   :val='driveInfo.mileage'
                   separator=','
+                  decimals='2'
                   unit='公里'
                 ></Box>
               </div>
@@ -110,6 +112,7 @@
                 <Box
                   title='日均行驶时长'
                   :val='driveInfo.duration'
+                  decimals='1'
                   separator=','
                   unit='小时'
                 ></Box>
@@ -150,13 +153,27 @@
             </div>
             <div class="line">
               <ht-line
-                :data='lineData'
+                :list='lineData'
                 :days='days'
                 :lineColor='["#008cf8", "#00e9c0"]'
+                title='车辆在线率/警情总数'
               ></ht-line>
             </div>
           </div>
-          <div class="table"></div>
+          <div class="table">
+            <div>
+              <scroll-view
+                :list='vehiclerankList'
+                title='近一年区域资产表现'
+              ></scroll-view>
+            </div>
+            <div>
+              <scroll-view
+                :list='highriskList'
+                title='警情轮播'
+              ></scroll-view>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -195,12 +212,15 @@ export default {
       days: ['01', '02', '03', '04', '05', '06'],
       lineData: [],
       timeNow: null,
-      distributionInfo: null
+      distributionInfo: null,
+      vehiclerankList: null,
+      highriskList: null
     }
   },
   mounted () {
     this.setTimeFunction()
     this.mapclick()
+    this.getVehiclerank()
   },
   methods: {
     getProvCode (obj) {
@@ -211,7 +231,6 @@ export default {
     /**地图点击获取省份ID */
     mapclick (val) {
       this.getVehicleInfo(val)
-      this.getVehiclerank()
       this.getDeviceInfo(val)
       this.getDriveInfo(val)
       this.getDeviceGroup(val)
@@ -230,7 +249,9 @@ export default {
       api.getVehicleInfo(this.getProvCode(provCode), res => {
         console.log('监控车辆统计数据接口', res)
         if (res.code == 200) {
-          this.vehicleInfo = res.data
+          let { data } = res
+          data.onlineRatio = data.onlineRatio * 100
+          this.vehicleInfo = data
         }
       })
     },
@@ -267,13 +288,15 @@ export default {
         console.log('警情分布月度统计数据接口', res)
         if (res.code == 200) {
           let value = res.data
-          let valueArr = [value.blackoutCnt, value.doubleOfflineCnt, value.longSuspendedCnt, value.fenceCnt, value.gatherCnt, value.lightSenseCnt]
+          let valueArr = []
           let names = ['断电报警', '双设备离线', '长期停驶', '围栏报警', '异常聚集', '光感报警']
           let indicator = []
-          names.map(e => {
+
+          names.map((e, index) => {
+            valueArr[index] = value[index].alarmCnt || 0
             indicator.push({
               name: e,
-              max: valueArr.max()
+              max: valueArr.max() || 100
             })
           })
           let distributionInfo = {
@@ -290,22 +313,61 @@ export default {
         }
       })
     },
-    /**车辆监控省份排名表数据接口 */
-    getVehiclerank () {
-      api.getVehiclerank(res => {
-        console.log('车辆监控省份排名表数据接口', res)
-      })
-    },
+
     /**车辆在线率、警情总数月度趋势图数据接口 */
     getTrend (provCode) {
       api.getTrend(this.getProvCode(provCode), res => {
         console.log('车辆在线率、警情总数月度趋势图数据接口', res)
+        if (res.code == 200) {
+          let { series, xdata } = res.data
+          let newSeries0 = []
+          let newSeries1 = []
+          series[0].data.map(e => {
+            newSeries0.push(e || 0)
+          })
+          series[1].data.forEach(e => {
+            newSeries1.push(e ? (Number(e) * 100).toFixed(2) : 0)
+          })
+          series[0].data = newSeries0
+          series[1].data = newSeries1
+          this.lineData = series
+          this.days = xdata
+        }
+      })
+    },
+    /**车辆监控省份排名表数据接口 */
+    getVehiclerank () {
+      api.getVehiclerank(res => {
+        console.log('车辆监控省份排名表数据接口', res)
+        if (res.code == 200) {
+          res.data.map((e, index) => {
+            e.index = Number(index) + 1
+            e.onlineRatio = e.onlineRatio ? `${(Number(e.onlineRatio) * 100).toFixed(2)}%` : '0%'
+            e.vehicleRatio = e.vehicleRatio ? `${(Number(e.vehicleRatio) * 100).toFixed(2)}%` : '0%'
+          })
+          let vehiclerankList = {
+            data: res.data,
+            title: ['排名', '省份', '车辆数', '占比', '在线率'],
+            keys: ['index', 'provName', 'currTotal', 'vehicleRatio', 'onlineRatio'],
+            color: ['#999', '#ffb000', '#999', '#999', '#ffb000']
+          }
+          this.vehiclerankList = vehiclerankList
+        }
       })
     },
     /**车辆高危警情数据接口*/
     getHighrisk (provCode) {
       api.getHighrisk(this.getProvCode(provCode), res => {
         console.log('车辆高危警情数据接口', res)
+        if (res.code == 200) {
+          let highriskList = {
+            data: res.data.list,
+            title: ['姓名', 'VIN码', '警情分级', '警情说明'],
+            keys: ['name', 'vin', 'level', 'explains'],
+            color: ['#999', '#ffb000', '#999', '#999']
+          }
+          this.highriskList = highriskList
+        }
       })
     },
   }
@@ -317,13 +379,13 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 100px;
+  height: 0.88rem;
   box-sizing: border-box;
   padding: 0 0.2rem;
   margin: 0 0.4rem;
   color: #fff;
-  border-bottom: 1px solid rgb(47, 52, 72);
-  font-size: 18px;
+  border-bottom: 0.01rem solid rgb(47, 52, 72);
+  font-size: 0.18rem;
   .logo {
     display: flex;
     align-items: center;
@@ -334,7 +396,7 @@ export default {
 }
 .main {
   width: 100%;
-  height: calc(100% - 100px);
+  height: calc(100% - 0.88rem);
   box-sizing: border-box;
   padding: 0.2rem 0.4rem 0.2rem;
   display: flex;
@@ -435,18 +497,30 @@ export default {
       flex-direction: column;
       padding-top: 0.2rem;
       box-sizing: border-box;
-      .canvas,
-      .table {
-        flex: 1;
-      }
+
       .canvas {
-        margin-bottom: 0.1rem;
         display: flex;
+        height: 40%;
         .radar {
           flex: 3;
         }
         .line {
           flex: 7;
+        }
+      }
+      .table {
+        display: flex;
+        height: 60%;
+        > div {
+          height: 100%;
+        }
+        > div:first-of-type {
+          margin-right: 0.1rem;
+          flex: 3;
+        }
+        > div:last-of-type {
+          margin-left: 0.1rem;
+          flex: 2;
         }
       }
     }

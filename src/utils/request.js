@@ -1,5 +1,6 @@
 import axios from 'axios'
-const domain = 'http://192.168.0.63:8209'
+// const domain = 'http://192.168.0.63:8209'
+const domain = 'http://d.test.glsx.com.cn:7060'
 class Request {
   get(url, data, success, fail) {
     return this.request('GET', url, data, success, fail)
