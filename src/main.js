@@ -13,6 +13,7 @@ time.prototype.format = format
 Vue.prototype.Request = request
 Vue.config.productionTip = false
 Vue.use(components)
+
 new Vue({
   render: h => h(App),
 }).$mount('#app')

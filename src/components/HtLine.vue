@@ -51,6 +51,11 @@ export default {
             return str
           }
         },
+        grid: {
+          left: '12%',
+          right: '10%',
+          top: '10%'
+        },
         xAxis: [
           {
             type: 'category',
@@ -79,6 +84,7 @@ export default {
         yAxis: [
           {
             type: 'value',
+            minInterval: 1,
             axisLabel: {
               formatter: '{value}',
               textStyle: {

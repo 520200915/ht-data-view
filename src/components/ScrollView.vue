@@ -3,7 +3,10 @@
     <div class='olt'>
       <div class="scroll-title">
         <template v-for='(i,ind) in listData.title'>
-          <div :key='ind'>{{i}}</div>
+          <div
+            :key='ind'
+            :style="{flex:`${listData.width[ind] || 1}`}"
+          >{{i}}</div>
         </template>
       </div>
       <div
@@ -23,7 +26,7 @@
             <template v-for='(k,ind) in listData.keys'>
               <a
                 :key='ind'
-                :style="{color:[`${listData.color[ind]}`]}"
+                :style="{color:`${listData.color[ind]}`,flex:`${listData.width[ind] || 1}`}"
                 :title='i[k]'
               >
                 {{i[k]}}

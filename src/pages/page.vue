@@ -2,7 +2,7 @@
   <div class='view-box'>
     <div class='header'>
       <div class='logo'>
-        <img src="~@a/man.png">
+        <img src="~@a/ht-logo.png">
         <h1>贷后资产风险看板</h1>
       </div>
       <div class='time'>{{timeNow}}</div>
@@ -165,6 +165,7 @@
               <scroll-view
                 :list='vehiclerankList'
                 title='近一年区域资产表现'
+                speed='5'
               ></scroll-view>
             </div>
             <div>
@@ -288,12 +289,15 @@ export default {
         console.log('警情分布月度统计数据接口', res)
         if (res.code == 200) {
           let value = res.data
-          let valueArr = []
           let names = ['断电报警', '双设备离线', '长期停驶', '围栏报警', '异常聚集', '光感报警']
           let indicator = []
-
-          names.map((e, index) => {
-            valueArr[index] = value[index].alarmCnt || 0
+          let valueArr = new Array(6).fill(0)
+          value.map(e => {
+            names.map((x, index) => {
+              if (e.alarmName == x) valueArr[index] = e.alarmCnt || 0
+            })
+          })
+          names.map(e => {
             indicator.push({
               name: e,
               max: valueArr.max() || 100
@@ -308,7 +312,6 @@ export default {
             ],
             indicator: indicator
           }
-
           this.distributionInfo = distributionInfo
         }
       })
@@ -349,7 +352,8 @@ export default {
             data: res.data,
             title: ['排名', '省份', '车辆数', '占比', '在线率'],
             keys: ['index', 'provName', 'currTotal', 'vehicleRatio', 'onlineRatio'],
-            color: ['#999', '#ffb000', '#999', '#999', '#ffb000']
+            color: ['#999', '#ffb000', '#999', '#999', '#ffb000'],
+            width: [1, 3, 2, 2, 2]
           }
           this.vehiclerankList = vehiclerankList
         }
@@ -364,7 +368,8 @@ export default {
             data: res.data.list,
             title: ['姓名', 'VIN码', '警情分级', '警情说明'],
             keys: ['name', 'vin', 'level', 'explains'],
-            color: ['#999', '#ffb000', '#999', '#999']
+            color: ['#999', '#ffb000', '#999', '#999'],
+            width: [2, 3, 2, 3]
           }
           this.highriskList = highriskList
         }
@@ -389,8 +394,13 @@ export default {
   .logo {
     display: flex;
     align-items: center;
+    img {
+      width: 1.67rem;
+      height: 0.88rem;
+      margin-right: 0.2rem;
+    }
     h1 {
-      font-size: 0.4rem;
+      font-size: 0.36rem;
     }
   }
 }
@@ -513,14 +523,13 @@ export default {
         height: 60%;
         > div {
           height: 100%;
+          flex: 1;
         }
         > div:first-of-type {
           margin-right: 0.1rem;
-          flex: 3;
         }
         > div:last-of-type {
           margin-left: 0.1rem;
-          flex: 2;
         }
       }
     }
