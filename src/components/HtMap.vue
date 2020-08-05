@@ -38,7 +38,6 @@ export default {
     chinaConfigure (mapName, data) {
       echarts.registerMap(mapName, data)
       const map = echarts.init(this.$refs.map)
-      // window.onresize = map.resize
       let options = {
         geo: {
           show: true,
@@ -47,23 +46,26 @@ export default {
             align: 'center',
             color: '#333',
             verticalAlign: 'top',
-            fontSize: 8
+            fontSize: 8,
           },
           map: mapName,
           regions: [
             nanhai
           ],
           roam: 'move',
-          zoom: 1.2
+          zoom: 1.22
         },
-        series: []
+        series: [],
       }
       map.setOption(options)
       map.on('click', val => {
-        this.cityName = this.cityName == val.name ? null : val.name
+        let {
+          name
+        } = val
+        this.cityName = this.cityName == name ? null : name
         let regions = [nanhai]
         let item = {
-          name: val.name,
+          name: name,
           selected: true
         }
         if (this.cityName) regions = [...regions, item]
@@ -73,7 +75,7 @@ export default {
         if (this.cityName) {
           try {
             china.features.forEach(e => {
-              if (e.properties.name == val.name) {
+              if (e.properties.name == name) {
                 throw e.properties.adcode
               }
             })
@@ -81,7 +83,7 @@ export default {
             adcode = error
           }
         }
-        this.$emit('click', this.cityName ? adcode : null)
+        this.$emit('click', adcode)
       })
     },
   }

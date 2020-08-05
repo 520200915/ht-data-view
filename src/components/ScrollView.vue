@@ -29,7 +29,7 @@
                 :style="{color:`${listData.color[ind]}`,flex:`${listData.width[ind] || 1}`}"
                 :title='i[k]'
               >
-                {{i[k]}}
+                <span :class='{"font-animation":listData.hasAnimation[ind] && i[k].length > 5}'>{{i[k]}}</span>
               </a>
 
             </template>
@@ -67,9 +67,7 @@ export default {
   },
   watch: {
     'list' (n, o) {
-      if (n) {
-        this.setData()
-      }
+      if (n) this.setData()
     }
   },
   mounted () {
@@ -183,15 +181,26 @@ export default {
       a {
         flex: 1;
         text-align: center;
-        text-overflow: ellipsis;
         overflow: hidden;
+      }
+      .font-animation {
         white-space: nowrap;
+        display: block;
+        animation: 10s wordsLoop linear infinite normal;
       }
     }
     .view-item::before {
       content: "";
       display: none;
     }
+  }
+}
+@keyframes wordsLoop {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
   }
 }
 </style>

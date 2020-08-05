@@ -104,7 +104,7 @@
                   title='日均行驶里程'
                   :val='driveInfo.mileage'
                   separator=','
-                  decimals='2'
+                  decimals='1'
                   unit='公里'
                 ></Box>
               </div>
@@ -172,6 +172,7 @@
               <scroll-view
                 :list='highriskList'
                 title='警情轮播'
+                speed='15'
               ></scroll-view>
             </div>
           </div>
@@ -210,7 +211,7 @@ export default {
         wirelessCnt: 0,
         multiCnt: 0
       },
-      days: ['01', '02', '03', '04', '05', '06'],
+      days: [],
       lineData: [],
       timeNow: null,
       distributionInfo: null,
@@ -231,6 +232,7 @@ export default {
     },
     /**地图点击获取省份ID */
     mapclick (val) {
+      console.log(val)
       this.getVehicleInfo(val)
       this.getDeviceInfo(val)
       this.getDriveInfo(val)
@@ -241,14 +243,13 @@ export default {
     },
     setTimeFunction () {
       setInterval(() => {
-        let timeNow = new Date().format('yyyy-MM-dd HH:mm:ss')
-        this.timeNow = timeNow
+        this.timeNow = new Date().format('yyyy-MM-dd HH:mm:ss')
       }, 1000)
     },
     /**监控车辆统计数据接口 */
     getVehicleInfo (provCode) {
       api.getVehicleInfo(this.getProvCode(provCode), res => {
-        console.log('监控车辆统计数据接口', res)
+        console.log('监控车辆统计数据接口', res, this.getProvCode(provCode))
         if (res.code == 200) {
           let { data } = res
           data.onlineRatio = data.onlineRatio * 100
@@ -269,8 +270,10 @@ export default {
     getDriveInfo (provCode) {
       api.getDriveInfo(this.getProvCode(provCode), res => {
         console.log('日均行驶统计数据接口', res)
-        if (res.code == 200) {
-          this.driveInfo = res.data
+        let { data, code } = res
+        if (code == 200) {
+          Object.keys(data).map(e => data[e] = typeof data[e] === 'number' ? data[e] : 0)
+          this.driveInfo = data
         }
       })
     },
@@ -294,7 +297,7 @@ export default {
           let valueArr = new Array(6).fill(0)
           value.map(e => {
             names.map((x, index) => {
-              if (e.alarmName == x) valueArr[index] = e.alarmCnt || 0
+              if (e.alarmName == x) valueArr[index] = typeof e.alarmCnt === 'number' ? e.alarmCnt : 0
             })
           })
           names.map(e => {
@@ -353,7 +356,8 @@ export default {
             title: ['排名', '省份', '车辆数', '占比', '在线率'],
             keys: ['index', 'provName', 'currTotal', 'vehicleRatio', 'onlineRatio'],
             color: ['#999', '#ffb000', '#999', '#999', '#ffb000'],
-            width: [1, 3, 2, 2, 2]
+            width: [1, 3, 3, 1.5, 1.5],
+            hasAnimation: new Array(5).fill(0)
           }
           this.vehiclerankList = vehiclerankList
         }
@@ -369,7 +373,8 @@ export default {
             title: ['姓名', 'VIN码', '警情分级', '警情说明'],
             keys: ['name', 'vin', 'level', 'explains'],
             color: ['#999', '#ffb000', '#999', '#999'],
-            width: [2, 3, 2, 3]
+            width: [2, 4, 2, 2],
+            hasAnimation: [0, 0, 0, 1]
           }
           this.highriskList = highriskList
         }

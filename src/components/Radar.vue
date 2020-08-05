@@ -39,8 +39,7 @@ export default {
   },
   methods: {
     draw (obj) {
-      let data = obj.data
-      let indicator = obj.indicator
+      let { data, indicator } = obj
       this.title = data[0].name
       this.canvas = echarts.init(this.$refs.radar)
       data[0].value.forEach((e, i) => {
